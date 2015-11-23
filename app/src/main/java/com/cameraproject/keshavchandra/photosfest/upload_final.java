@@ -2,7 +2,9 @@ package com.cameraproject.keshavchandra.photosfest;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -61,7 +63,7 @@ public class upload_final extends Activity {
         });
     }
 
-    public void loadImagefromGallery(View view) {
+    public void loadfromGallery(View view) {
         // Create intent to Open Image applications like Gallery, Google Photos
         Intent galleryIntent = new Intent(Intent.ACTION_PICK,
                 android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
@@ -84,9 +86,9 @@ public class upload_final extends Activity {
             }
             try {
                 Bitmap bitmap;
-                BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
+                BitmapFactory.Options bOptions = new BitmapFactory.Options();
                 bitmap = BitmapFactory.decodeFile(f.getAbsolutePath(),
-                        bitmapOptions);
+                        bOptions);
                 imgView.setImageBitmap(bitmap);
                 String path = android.os.Environment
                         .getExternalStorageDirectory()
@@ -158,7 +160,7 @@ public class upload_final extends Activity {
             prgDialog.setMessage("Converting Image to Binary Data");
             prgDialog.show();
             // Convert image to String using Base64
-            encodeImagetoString();
+            encodetoString();
             // When Image is not selected from Gallery
         } else {
             Toast.makeText(
@@ -169,7 +171,7 @@ public class upload_final extends Activity {
     }
 
     // AsyncTask - To convert Image to String
-    public void encodeImagetoString() {
+    public void encodetoString() {
         new AsyncTask<Void, Void, String>() {
 
             protected void onPreExecute() {
@@ -178,38 +180,39 @@ public class upload_final extends Activity {
 
             @Override
             protected String doInBackground(Void... params) {
-                BitmapFactory.Options options = null;
-                options = new BitmapFactory.Options();
-                options.inSampleSize = 3;
+                BitmapFactory.Options o = null;
+                o = new BitmapFactory.Options();
+                o.inSampleSize = 3;
                 bitmap = BitmapFactory.decodeFile(imgPath,
-                        options);
-                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                        o);
+                ByteArrayOutputStream s = new ByteArrayOutputStream();
                 // Must compress the Image to reduce image size to make upload easy
-                bitmap.compress(Bitmap.CompressFormat.PNG, 50, stream);
-                byte[] byte_arr = stream.toByteArray();
+                bitmap.compress(Bitmap.CompressFormat.PNG, 50, s);
+                byte[] b = s.toByteArray();
                 // Encode Image to String
-                encodedString = Base64.encodeToString(byte_arr, 0);
+                encodedString = Base64.encodeToString(b, 0);
                 return "";
             }
 
             @Override
             protected void onPostExecute(String msg) {
                 prgDialog.setMessage("Calling Upload");
+
+                SharedPreferences prfs = getSharedPreferences("AUTHENTICATION_FILE_NAME", Context.MODE_PRIVATE);
+                String restoredText = prfs.getString("nameKey","");
+                params.put("user",restoredText);
+
                 // Put converted Image string into Async Http Post param
 
                 params.put("image", encodedString);
                 // Trigger Image upload
-                makeHTTPCall();
+                callHTTP();
             }
         }.execute(null, null, null);
     }
 
-    public void triggerImageUpload() {
-
-    }
-
     // Make Http call to upload Image to Php server
-    public void makeHTTPCall() {
+    public void callHTTP() {
         prgDialog.setMessage("Invoking Php");
         AsyncHttpClient client = new AsyncHttpClient();
         client.setTimeout(1000);
@@ -219,7 +222,7 @@ public class upload_final extends Activity {
                     @Override
                     public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                         prgDialog.hide();
-                        Toast.makeText(getApplicationContext(), "Hello ",
+                        Toast.makeText(getApplicationContext(), "Image uploaded! ",
                                 Toast.LENGTH_LONG).show();
                     }
 
@@ -243,7 +246,7 @@ public class upload_final extends Activity {
                         else {
                             Toast.makeText(
                                     getApplicationContext(),
-                                    "Error Occured \n Most Common Error: \n1. Device not connected to Internet\n2. Web App is not deployed in App server\n3. App server is not running\n HTTP Status code : "
+                                    "Error Occured. HTTP Status code : "
                                             + statusCode, Toast.LENGTH_LONG)
                                     .show();
                         }

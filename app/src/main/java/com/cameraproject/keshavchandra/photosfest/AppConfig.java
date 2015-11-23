@@ -8,10 +8,11 @@ import com.android.volley.toolbox.Volley;
  */
 public class AppConfig{
 // Server user login url
-public static String URL_LOGIN = "http://192.168.137.223/android_login_api/login.php";
+public static String URL_LOGIN = "http://192.168.166.1/android_login_api/login.php";
 
 // Server user register url
-public static String URL_REGISTER = "http://192.168.137.223/android_login_api/register.php";
-    public static String IP="http://192.168.137.223/imgupload/";
+public static String URL_REGISTER = "http://192.168.166.1/android_login_api/register.php";
+    public static String IP="http://192.168.166.1/imgupload/";
+    public static String IP2="http://192.168.166.1/login/";
 
 }

@@ -2,22 +2,35 @@ package com.cameraproject.keshavchandra.photosfest;
 
 import android.app.Activity;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 public class home extends Activity {
     private Button btUpload,btDownload;
+    private TextView tvUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+        final Bundle bundle = getIntent().getExtras();
+        tvUser = (TextView)findViewById(R.id.tv_username);
         btUpload = (Button)findViewById(R.id.btUpload);
         btDownload = (Button)findViewById(R.id.btDownload);
+        //tvUser.setText("Hello");
+
+        tvUser.setText(getIntent().getStringExtra("User"));
+        SharedPreferences prfs = getSharedPreferences("AUTHENTICATION_FILE_NAME", Context.MODE_PRIVATE);
+        String restoredText = prfs.getString("nameKey","");
+        System.out.println("Hello"+restoredText);
+        tvUser.setText(restoredText);
         btUpload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -29,6 +42,8 @@ public class home extends Activity {
             @Override
             public void onClick(View v) {
                 Intent i = new Intent(getApplicationContext(),download_home.class);
+                String s = bundle.getString("User");
+                i.putExtra("username",s);
                 startActivity(i);
             }
         });
